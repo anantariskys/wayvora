@@ -81,7 +81,7 @@ export function TripPlanner({ tripId }: TripPlannerProps) {
 
   if (tripQuery.isLoading) {
     return (
-      <main className="grid min-h-[calc(100dvh-56px)] place-items-center bg-slate-50">
+      <main className="grid h-dvh place-items-center bg-slate-50">
         <div className="rounded-md border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
           Loading trip planner...
         </div>
@@ -91,7 +91,7 @@ export function TripPlanner({ tripId }: TripPlannerProps) {
 
   if (!tripQuery.data) {
     return (
-      <main className="grid min-h-[calc(100dvh-56px)] place-items-center bg-slate-50">
+      <main className="grid h-dvh place-items-center bg-slate-50">
         <div className="rounded-md border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">
           Trip was not found.
         </div>
@@ -190,7 +190,7 @@ export function TripPlanner({ tripId }: TripPlannerProps) {
   }
 
   return (
-    <main className="relative flex h-[calc(100dvh-57px)] overflow-hidden bg-slate-50">
+    <main className="relative flex h-dvh overflow-hidden bg-slate-50">
       <ItinerarySidebar
         tripName={tripQuery.data.name}
         places={places}
