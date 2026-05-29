@@ -9,9 +9,14 @@ import type { PlaceSearchResult } from "@/features/places/types";
 type PlaceSearchProps = {
   onPlaceSelect: (place: PlaceSearchResult) => void;
   proximity?: { latitude: number; longitude: number } | null;
+  placeholder?: string;
 };
 
-export function PlaceSearch({ onPlaceSelect, proximity }: PlaceSearchProps) {
+export function PlaceSearch({
+  onPlaceSelect,
+  proximity,
+  placeholder,
+}: PlaceSearchProps) {
   const [query, setQuery] = useState("");
   const searchQuery = usePlaceSearch(query, proximity);
   const results = searchQuery.data ?? [];
@@ -33,7 +38,8 @@ export function PlaceSearch({ onPlaceSelect, proximity }: PlaceSearchProps) {
           aria-label="Search destinations"
           className="pl-9"
           placeholder={
-            proximity ? "Search nearby destinations" : "Search destinations"
+            placeholder ??
+            (proximity ? "Search nearby destinations" : "Search destinations")
           }
           value={query}
           onChange={(event) => setQuery(event.target.value)}

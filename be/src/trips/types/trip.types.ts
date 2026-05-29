@@ -1,8 +1,8 @@
-export type TravelProfile = "driving" | "walking" | "cycling";
+export type TravelProfile = 'driving' | 'walking' | 'cycling';
 
 export type Place = {
   id: string;
-  provider: "osm" | "maplibre";
+  provider: 'mapbox' | 'osm' | 'maplibre';
   providerPlaceId: string;
   name: string;
   address: string;
@@ -23,15 +23,26 @@ export type TripPlace = {
   durationFromPreviousSeconds?: number;
 };
 
+export type RouteAlternative = {
+  index: number;
+  label: string;
+  totalDistanceMeters: number;
+  totalDurationSeconds: number;
+  geometry: {
+    type: 'LineString';
+    coordinates: [number, number][];
+  };
+};
+
 export type OptimizedRoute = {
   routeId: string;
   tripId: string;
-  algorithm: "nearest_neighbor";
+  algorithm: 'nearest_neighbor';
   profile: TravelProfile;
   startPoint?: Place | null;
   orderedStops: TripPlace[];
-  alternatives?: RouteAlternative[];
-  activeAlternativeIndex?: number;
+  alternatives: RouteAlternative[];
+  activeAlternativeIndex: number;
   summary: {
     totalDistanceMeters: number;
     totalDurationSeconds: number;
@@ -40,37 +51,22 @@ export type OptimizedRoute = {
     providerRuntimeMs: number;
   };
   geometry: {
-    type: "LineString";
-    coordinates: [number, number][];
-  };
-};
-
-export type RouteAlternative = {
-  index: number;
-  label: string;
-  totalDistanceMeters: number;
-  totalDurationSeconds: number;
-  geometry: {
-    type: "LineString";
+    type: 'LineString';
     coordinates: [number, number][];
   };
 };
 
 export type Trip = {
   id: string;
+  ownerId: string;
   name: string;
   description: string;
-  status: "draft" | "planned";
-  visibility: "private" | "shared";
-  startDate: string;
-  endDate: string;
+  status: 'draft' | 'planned';
+  visibility: 'private' | 'shared';
+  startDate?: string;
+  endDate?: string;
   places: TripPlace[];
   latestRoute: OptimizedRoute | null;
-};
-
-export type OptimizeTripInput = {
-  profile: TravelProfile;
-  startTripPlaceId?: string;
-  returnToStart: boolean;
-  respectLockedPlaces: boolean;
+  createdAt: string;
+  updatedAt: string;
 };

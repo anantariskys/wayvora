@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import type { PlaceSearchResult } from "@/features/places/types";
 import { formatDuration } from "@/lib/utils";
 import { usePlannerStore } from "../stores/planner.store";
-import type { OptimizedRoute, TravelProfile, TripPlace } from "../types";
+import type { OptimizedRoute, Place, TravelProfile, TripPlace } from "../types";
 import { PlaceSearch } from "./place-search";
 import { RouteSummary } from "./route-summary";
 
@@ -20,12 +20,18 @@ type ItinerarySidebarProps = {
   tripName: string;
   places: TripPlace[];
   route: OptimizedRoute | null;
+  startPoint: Place | null;
   profile: TravelProfile;
   isOptimizing: boolean;
+  isRouting?: boolean;
+  canOptimize: boolean;
   onOptimize: () => void;
   onProfileChange: (profile: TravelProfile) => void;
   onPlaceSelect: (place: PlaceSearchResult) => void;
+  onStartPointSelect: (place: PlaceSearchResult) => void;
+  onUseCurrentLocationAsStart: () => void;
   onPlaceRemove: (tripPlaceId: string) => void;
+  onAlternativeSelect: (index: number) => void;
   searchProximity?: { latitude: number; longitude: number } | null;
 };
 
@@ -35,12 +41,18 @@ export function ItinerarySidebar({
   tripName,
   places,
   route,
+  startPoint,
   profile,
   isOptimizing,
+  isRouting,
+  canOptimize,
   onOptimize,
   onProfileChange,
   onPlaceSelect,
+  onStartPointSelect,
+  onUseCurrentLocationAsStart,
   onPlaceRemove,
+  onAlternativeSelect,
   searchProximity,
 }: ItinerarySidebarProps) {
   return (
@@ -50,12 +62,18 @@ export function ItinerarySidebar({
           tripName={tripName}
           places={places}
           route={route}
+          startPoint={startPoint}
           profile={profile}
           isOptimizing={isOptimizing}
+          isRouting={isRouting}
+          canOptimize={canOptimize}
           onOptimize={onOptimize}
           onProfileChange={onProfileChange}
           onPlaceSelect={onPlaceSelect}
+          onStartPointSelect={onStartPointSelect}
+          onUseCurrentLocationAsStart={onUseCurrentLocationAsStart}
           onPlaceRemove={onPlaceRemove}
+          onAlternativeSelect={onAlternativeSelect}
           searchProximity={searchProximity}
         />
       </aside>
@@ -71,7 +89,7 @@ export function ItinerarySidebar({
           <Button
             type="button"
             size="sm"
-            disabled={places.length < 2 || isOptimizing}
+            disabled={!canOptimize || isOptimizing}
             onClick={onOptimize}
           >
             {isOptimizing ? "Calculating..." : "Optimize"}
@@ -86,12 +104,18 @@ function SidebarContent({
   tripName,
   places,
   route,
+  startPoint,
   profile,
   isOptimizing,
+  isRouting,
+  canOptimize,
   onOptimize,
   onProfileChange,
   onPlaceSelect,
+  onStartPointSelect,
+  onUseCurrentLocationAsStart,
   onPlaceRemove,
+  onAlternativeSelect,
   searchProximity,
 }: ItinerarySidebarProps) {
   return (
@@ -127,6 +151,36 @@ function SidebarContent({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4 [scrollbar-width:thin]">
+        <section className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-950">
+                Start point
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                {startPoint
+                  ? `${startPoint.name} - ${startPoint.address}`
+                  : "Choose your kos, hotel, or current location."}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={onUseCurrentLocationAsStart}
+            >
+              Current
+            </Button>
+          </div>
+          <div className="mt-3">
+            <PlaceSearch
+              onPlaceSelect={onStartPointSelect}
+              proximity={searchProximity}
+              placeholder="Search start point"
+            />
+          </div>
+        </section>
+
         <div className="mb-4 flex rounded-md border border-slate-200 bg-slate-50 p-1">
           {profiles.map((item) => (
             <button
@@ -144,7 +198,32 @@ function SidebarContent({
           ))}
         </div>
 
-        <RouteSummary route={route} profile={profile} />
+        <RouteSummary route={route} profile={profile} isStale={isRouting} />
+
+        {route?.alternatives && route.alternatives.length > 1 ? (
+          <section className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+            <h2 className="text-sm font-semibold text-slate-950">
+              Alternative roads
+            </h2>
+            <div className="mt-2 grid gap-2">
+              {route.alternatives.map((alternative) => (
+                <button
+                  type="button"
+                  key={alternative.index}
+                  onClick={() => onAlternativeSelect(alternative.index)}
+                  className={`rounded-md border px-3 py-2 text-left text-sm transition ${
+                    route.activeAlternativeIndex === alternative.index
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-800"
+                      : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-white"
+                  }`}
+                >
+                  {alternative.label} -{" "}
+                  {Math.round(alternative.totalDurationSeconds / 60)} min
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <div className="mt-5 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-950">Itinerary</h2>
@@ -166,10 +245,14 @@ function SidebarContent({
         <Button
           type="button"
           className="w-full"
-          disabled={places.length < 2 || isOptimizing}
+          disabled={!canOptimize || isOptimizing}
           onClick={onOptimize}
         >
-          {isOptimizing ? "Calculating route..." : "Optimize route"}
+          {isOptimizing
+            ? "Optimizing route..."
+            : isRouting
+              ? "Updating road route..."
+              : "Optimize route"}
         </Button>
       </div>
     </>
